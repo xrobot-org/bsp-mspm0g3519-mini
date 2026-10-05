@@ -95,25 +95,19 @@ extern "C" void app_main(void)
                                               sizeof(uart7_tx_buf), 5, 64));
 
   // I2C: polling
-  static MSPM0I2C i2c0({I2C_0_INST, I2C_0_INST_INT_IRQN, PD0_BUSCLK_FREQ, I2C_0_BUS_SPEED_HZ,
-                        MSPM0I2C::ResolveIndex(I2C_0_INST_INT_IRQN)},
-                       {i2c0_buf, sizeof(i2c0_buf)}, 8, {I2C_0_BUS_SPEED_HZ});
-  static MSPM0I2C i2c1({I2C_1_INST, I2C_1_INST_INT_IRQN, PD0_BUSCLK_FREQ, I2C_1_BUS_SPEED_HZ,
-                        MSPM0I2C::ResolveIndex(I2C_1_INST_INT_IRQN)},
-                       {i2c1_buf, sizeof(i2c1_buf)}, 8, {I2C_1_BUS_SPEED_HZ});
+  static MSPM0I2C i2c0(MSPM0_I2C_INIT(I2C_0, PD0_BUSCLK_FREQ, i2c0_buf, sizeof(i2c0_buf), 8),
+                       {I2C_0_BUS_SPEED_HZ});
+  static MSPM0I2C i2c1(MSPM0_I2C_INIT(I2C_1, PD0_BUSCLK_FREQ, i2c1_buf, sizeof(i2c1_buf), 8),
+                       {I2C_1_BUS_SPEED_HZ});
 
   // SPI: DMA for transfers longer than 3 bytes
-  static MSPM0SPI spi1({SPI_1_INST, SPI_1_INST_INT_IRQN, PD1_BUSCLK_FREQ,
-                        MSPM0SPI::ResolveIndex(SPI_1_INST_INT_IRQN),
-                        DMA_CH_SPI1_RX_CHAN_ID, DMA_CH_SPI1_TX_CHAN_ID},
-                       {spi1_rx_buf, sizeof(spi1_rx_buf)},
-                       {spi1_tx_buf, sizeof(spi1_tx_buf)}, 3);
+  static MSPM0SPI spi1(MSPM0_SPI_INIT(SPI_1, PD1_BUSCLK_FREQ, DMA_CH_SPI1_RX, DMA_CH_SPI1_TX,
+                                      spi1_rx_buf, sizeof(spi1_rx_buf), spi1_tx_buf,
+                                      sizeof(spi1_tx_buf), 3));
 
   // PWM: the two channels of TIMA1 share one period; 1 kHz, counter stopped
-  static MSPM0PWM pwm_tima1_c0(
-      {PWM_TIMA1_INST, GPIO_PWM_TIMA1_C0_IDX, PWM_TIMA1_INST_CLK_FREQ});
-  static MSPM0PWM pwm_tima1_c1(
-      {PWM_TIMA1_INST, GPIO_PWM_TIMA1_C1_IDX, PWM_TIMA1_INST_CLK_FREQ});
+  static MSPM0PWM pwm_tima1_c0(MSPM0_PWM_CH(PWM_TIMA1, 0));
+  static MSPM0PWM pwm_tima1_c1(MSPM0_PWM_CH(PWM_TIMA1, 1));
   pwm_tima1_c0.SetConfig({1000});
 
   // Terminal on uart0
