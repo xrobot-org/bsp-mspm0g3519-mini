@@ -102,13 +102,13 @@ cmake --build --preset debug
 
 `xrobot setup` 拉取模块、检查配置并生成 `User/xrobot_main.hpp`。预设为 `debug` 和 `release`，产物为 `build/<预设>/mspm0_minidb48.elf`，以及同目录下的 `.hex`、`.bin` 和 `.map`。编译和链接选项与 SDK 例程 `empty` 的 gcc makefile 一致，C++ 另加 `-fno-exceptions -fno-rtti -fno-threadsafe-statics`；Release 为 `-O2`，Debug 为 `-Og`。
 
-`.github/workflows/build.yml` 在镜像 `ghcr.io/xrobot-org/docker-image-mspm0:main` 中检查配置格式、按 `xrobot.lock` 解析模块，并构建两个预设；镜像不含 SDK 和 SysConfig，工作流从 TI 的 `mspm0-sdk` 仓库稀疏检出 SDK 的 `source/` 和 `.metadata/`，从 TI 的下载地址安装 SysConfig，二者都加以缓存。
+`.github/workflows/build.yml` 在镜像 `ghcr.io/xrobot-org/docker-image-mspm0:main` 中检查配置格式、按 `xrobot.lock` 解析模块，并构建两个预设；镜像提供 MSPM0 SDK 2.11.00.07 和 SysConfig 1.28.1，并已设置 `MSPM0_SDK_INSTALL_DIR` 和 `SYSCONFIG_TOOL`。
 
 Building needs MSPM0 SDK 2.11.00.07, SysConfig 1.28.1, the Arm GNU Toolchain (`arm-none-eabi-gcc` on `PATH`), CMake and Ninja. The environment variable `MSPM0_SDK_INSTALL_DIR` points at the SDK and `SYSCONFIG_TOOL` at the SysConfig command line (`sysconfig_cli.sh` on Linux, `sysconfig_cli.bat` on Windows); these are the variable names the SDK example makefiles use. XRobot is 1.0.0, matching `xrobot:` in `Modules/modules.yaml`.
 
 `xrobot setup` fetches the Modules, checks the configurations and generates `User/xrobot_main.hpp`. The presets are `debug` and `release`; the output is `build/<preset>/mspm0_minidb48.elf` with `.hex`, `.bin` and `.map` next to it. The compile and link options match the gcc makefile of the SDK example `empty`, and C++ adds `-fno-exceptions -fno-rtti -fno-threadsafe-statics`; Release uses `-O2` and Debug `-Og`.
 
-`.github/workflows/build.yml` checks the configuration format, resolves the Modules from `xrobot.lock` and builds both presets in the image `ghcr.io/xrobot-org/docker-image-mspm0:main`. The image contains neither the SDK nor SysConfig: the workflow checks out `source/` and `.metadata/` of the SDK sparsely from TI's `mspm0-sdk` repository, installs SysConfig from TI's download address, and caches both.
+`.github/workflows/build.yml` checks the configuration format, resolves the Modules from `xrobot.lock` and builds both presets in the image `ghcr.io/xrobot-org/docker-image-mspm0:main`, which provides MSPM0 SDK 2.11.00.07 and SysConfig 1.28.1 with `MSPM0_SDK_INSTALL_DIR` and `SYSCONFIG_TOOL` set.
 
 ## 5. 烧录与运行 / Flash and Run
 

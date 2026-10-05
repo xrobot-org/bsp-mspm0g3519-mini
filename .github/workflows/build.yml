@@ -12,11 +12,6 @@ on:
 permissions:
   contents: read
 
-env:
-  # The image has Arm GCC but neither the MSPM0 SDK nor SysConfig; the build fetches both.
-  MSPM0_SDK_TAG: mspm0_sdk_2_11_00_07
-  SYSCONFIG_INSTALLER: sysconfig-1.28.1_4785-setup.run
-
 jobs:
   # Configuration check: formatting of the XRobot YAML files and a locked module resolution.
   check:
@@ -54,43 +49,11 @@ jobs:
         with:
           submodules: recursive
 
-      # The build needs source/ (driverlib, device headers, startup files, the SysConfig
-      # metadata) and .metadata/ of the SDK, about 250 MB of the 2.3 GB tag.
-      - name: Cache the MSPM0 SDK
-        id: sdk-cache
-        uses: actions/cache@v4
-        with:
-          path: .mspm0-sdk
-          key: mspm0-sdk-${{ env.MSPM0_SDK_TAG }}-source
-
-      - name: Fetch the MSPM0 SDK
-        if: steps.sdk-cache.outputs.cache-hit != 'true'
+      # The image provides the MSPM0 SDK and SysConfig (MSPM0_SDK_INSTALL_DIR,
+      # SYSCONFIG_TOOL).
+      - name: Show SysConfig and the submodules
         run: |
-          git clone --depth 1 --branch "$MSPM0_SDK_TAG" --filter=blob:none --sparse \
-            https://github.com/TexasInstruments/mspm0-sdk .mspm0-sdk
-          git -C .mspm0-sdk sparse-checkout set --no-cone /source/ /.metadata/
-
-      - name: Cache SysConfig
-        id: sysconfig-cache
-        uses: actions/cache@v4
-        with:
-          path: .sysconfig
-          key: sysconfig-${{ env.SYSCONFIG_INSTALLER }}
-
-      - name: Install SysConfig
-        if: steps.sysconfig-cache.outputs.cache-hit != 'true'
-        run: |
-          curl -fL --retry 5 --retry-delay 10 -o "$RUNNER_TEMP/sysconfig-setup.run" \
-            "https://downloads.ti.com/ccs/esd/sysconfig/$SYSCONFIG_INSTALLER"
-          chmod +x "$RUNNER_TEMP/sysconfig-setup.run"
-          "$RUNNER_TEMP/sysconfig-setup.run" --mode unattended \
-            --prefix "$GITHUB_WORKSPACE/.sysconfig"
-          rm "$RUNNER_TEMP/sysconfig-setup.run"
-
-      - name: Select the SDK and SysConfig
-        run: |
-          echo "MSPM0_SDK_INSTALL_DIR=$GITHUB_WORKSPACE/.mspm0-sdk" >> "$GITHUB_ENV"
-          echo "SYSCONFIG_TOOL=$GITHUB_WORKSPACE/.sysconfig/sysconfig_cli.sh" >> "$GITHUB_ENV"
+          "$SYSCONFIG_TOOL" --version
           git config --global --add safe.directory '*'
           git submodule status
 
@@ -121,41 +84,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache the MSPM0 SDK
-        id: sdk-cache
-        uses: actions/cache@v4
-        with:
-          path: .mspm0-sdk
-          key: mspm0-sdk-${{ env.MSPM0_SDK_TAG }}-source
-
-      - name: Fetch the MSPM0 SDK
-        if: steps.sdk-cache.outputs.cache-hit != 'true'
-        run: |
-          git clone --depth 1 --branch "$MSPM0_SDK_TAG" --filter=blob:none --sparse \
-            https://github.com/TexasInstruments/mspm0-sdk .mspm0-sdk
-          git -C .mspm0-sdk sparse-checkout set --no-cone /source/ /.metadata/
-
-      - name: Cache SysConfig
-        id: sysconfig-cache
-        uses: actions/cache@v4
-        with:
-          path: .sysconfig
-          key: sysconfig-${{ env.SYSCONFIG_INSTALLER }}
-
-      - name: Install SysConfig
-        if: steps.sysconfig-cache.outputs.cache-hit != 'true'
-        run: |
-          curl -fL --retry 5 --retry-delay 10 -o "$RUNNER_TEMP/sysconfig-setup.run" \
-            "https://downloads.ti.com/ccs/esd/sysconfig/$SYSCONFIG_INSTALLER"
-          chmod +x "$RUNNER_TEMP/sysconfig-setup.run"
-          "$RUNNER_TEMP/sysconfig-setup.run" --mode unattended \
-            --prefix "$GITHUB_WORKSPACE/.sysconfig"
-          rm "$RUNNER_TEMP/sysconfig-setup.run"
-
       - name: Update LibXR to master
         run: |
-          echo "MSPM0_SDK_INSTALL_DIR=$GITHUB_WORKSPACE/.mspm0-sdk" >> "$GITHUB_ENV"
-          echo "SYSCONFIG_TOOL=$GITHUB_WORKSPACE/.sysconfig/sysconfig_cli.sh" >> "$GITHUB_ENV"
           git config --global --add safe.directory '*'
           git -C libxr fetch --depth 1 origin master
           git -C libxr checkout --detach FETCH_HEAD
