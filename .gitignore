@@ -19,6 +19,3 @@
 /Modules/CMakeLists.txt
 /Modules/*/
 
-# MSPM0 SDK and SysConfig installed by CI
-/.mspm0-sdk/
-/.sysconfig/
