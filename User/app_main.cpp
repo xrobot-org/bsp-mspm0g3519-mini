@@ -32,10 +32,12 @@ static void OnKeyInterrupt(bool in_isr, std::atomic<uint32_t>* count)
 }
 /* User Code End 1 */
 
-// The I2C and SPI modules run from BUSCLK (ULPCLK); SysConfig does not export its
-// frequency, so take it from UART_0, which uses BUSCLK as well. (MSPM0_I2C_INIT and
-// MSPM0_SPI_INIT would pass CPUCLK_FREQ, which is twice as high at MCLK = 80 MHz.)
-static constexpr uint32_t BUSCLK_FREQ = UART_0_INST_FREQUENCY;
+// Input clocks (BUSCLK of the power domain). I2C0/I2C1 are in PD0 and run from ULPCLK
+// (40 MHz); SysConfig does not export it, so take it from UART_0, which is in PD0 as well
+// (MSPM0_I2C_INIT would pass CPUCLK_FREQ). SPI1 is in PD1 and runs from MCLK, CPUCLK_FREQ
+// (80 MHz); SysConfig's comment in SYSCFG_DL_SPI_1_init shows the same input clock.
+static constexpr uint32_t PD0_BUSCLK_FREQ = UART_0_INST_FREQUENCY;
+static constexpr uint32_t PD1_BUSCLK_FREQ = CPUCLK_FREQ;
 
 // BSP declarations for MSPM0_UART_MAIN_INIT: the UART that owns each DMA channel, and
 // that the channel serves the transmitter. The macro checks them against the SysConfig
@@ -93,15 +95,15 @@ extern "C" void app_main(void)
                                               sizeof(uart7_tx_buf), 5, 64));
 
   // I2C: polling
-  static MSPM0I2C i2c0({I2C_0_INST, I2C_0_INST_INT_IRQN, BUSCLK_FREQ, I2C_0_BUS_SPEED_HZ,
+  static MSPM0I2C i2c0({I2C_0_INST, I2C_0_INST_INT_IRQN, PD0_BUSCLK_FREQ, I2C_0_BUS_SPEED_HZ,
                         MSPM0I2C::ResolveIndex(I2C_0_INST_INT_IRQN)},
                        {i2c0_buf, sizeof(i2c0_buf)}, 8, {I2C_0_BUS_SPEED_HZ});
-  static MSPM0I2C i2c1({I2C_1_INST, I2C_1_INST_INT_IRQN, BUSCLK_FREQ, I2C_1_BUS_SPEED_HZ,
+  static MSPM0I2C i2c1({I2C_1_INST, I2C_1_INST_INT_IRQN, PD0_BUSCLK_FREQ, I2C_1_BUS_SPEED_HZ,
                         MSPM0I2C::ResolveIndex(I2C_1_INST_INT_IRQN)},
                        {i2c1_buf, sizeof(i2c1_buf)}, 8, {I2C_1_BUS_SPEED_HZ});
 
   // SPI: DMA for transfers longer than 3 bytes
-  static MSPM0SPI spi1({SPI_1_INST, SPI_1_INST_INT_IRQN, BUSCLK_FREQ,
+  static MSPM0SPI spi1({SPI_1_INST, SPI_1_INST_INT_IRQN, PD1_BUSCLK_FREQ,
                         MSPM0SPI::ResolveIndex(SPI_1_INST_INT_IRQN),
                         DMA_CH_SPI1_RX_CHAN_ID, DMA_CH_SPI1_TX_CHAN_ID},
                        {spi1_rx_buf, sizeof(spi1_rx_buf)},
