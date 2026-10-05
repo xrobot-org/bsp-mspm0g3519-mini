@@ -67,11 +67,11 @@ extern "C" void app_main(void)
   static MSPM0Timebase timebase;
   PlatformInit();
 
-  // GPIO: SysConfig configured LED1 (PB8) and LED2 (PA16) as outputs, high (off, active
+  // GPIO: SysConfig configured LED1 (PA25) and LED2 (PA16) as outputs, high (off, active
   // low), and KEY1 (PB24) and KEY2 (PB20) as inputs.
-  static MSPM0GPIO LED1(GPIO_LEDS_PIN_LED1_PORT, GPIO_LEDS_PIN_LED1_PIN,
+  static MSPM0GPIO LED1(GPIO_LEDS_PORT, GPIO_LEDS_PIN_LED1_PIN,
                         GPIO_LEDS_PIN_LED1_IOMUX);
-  static MSPM0GPIO LED2(GPIO_LEDS_PIN_LED2_PORT, GPIO_LEDS_PIN_LED2_PIN,
+  static MSPM0GPIO LED2(GPIO_LEDS_PORT, GPIO_LEDS_PIN_LED2_PIN,
                         GPIO_LEDS_PIN_LED2_IOMUX);
   static MSPM0GPIO KEY1(GPIO_KEYS_PORT, GPIO_KEYS_PIN_KEY1_PIN, GPIO_KEYS_PIN_KEY1_IOMUX);
   static MSPM0GPIO KEY2(GPIO_KEYS_PORT, GPIO_KEYS_PIN_KEY2_PIN, GPIO_KEYS_PIN_KEY2_IOMUX);

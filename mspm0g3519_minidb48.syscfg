@@ -106,7 +106,7 @@ GPIO1.$name                          = "GPIO_LEDS";
 GPIO1.associatedPins.create(2);
 GPIO1.associatedPins[0].$name        = "PIN_LED1";
 GPIO1.associatedPins[0].initialValue = "SET";
-GPIO1.associatedPins[0].pin.$assign  = "PB8";
+GPIO1.associatedPins[0].pin.$assign  = "PA25";
 GPIO1.associatedPins[1].$name        = "PIN_LED2";
 GPIO1.associatedPins[1].initialValue = "SET";
 GPIO1.associatedPins[1].pin.$assign  = "PA16";

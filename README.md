@@ -35,7 +35,7 @@ The board is the MSPM0 MINI-D.B.48 core board with a TI MSPM0G3519 (Arm Cortex-M
 | --- | --- | --- |
 | 时钟 | HFXT 16 MHz（PA5、PA6）经 SYSPLL 得到 MCLK 80 MHz；LFXT 32.768 kHz（PA3、PA4） | — |
 | SysTick | — | `MSPM0Timebase` |
-| LED1、LED2 | PB8、PA16，低电平点亮 | `MSPM0GPIO LED1`、`LED2` |
+| LED1、LED2 | PA25、PA16，低电平点亮 | `MSPM0GPIO LED1`、`LED2` |
 | KEY1、KEY2 | PB24、PB20，按下为低电平，下降沿中断 | `MSPM0GPIO KEY1`、`KEY2` |
 | UART0 | PA10 TX、PA11 RX，连接 CH340N，115200 | `MSPM0UART uart0`，发送使用 DMA；终端 |
 | UART1 | PA8 TX、PA9 RX | `MSPM0UART uart1`，发送使用 DMA |
@@ -49,15 +49,15 @@ The board is the MSPM0 MINI-D.B.48 core board with a TI MSPM0G3519 (Arm Cortex-M
 | ADC | PA24（ADC0.3）、PB19（ADC1.6） | SysConfig 配置 |
 | DAC | PA15 | SysConfig 配置 |
 
-引脚按板子原理图 v0.3 分配，LED1 按实物接在 PB8（原理图为 PA25）。SPI1 的 PICO 只能选 PB8、PB15 或 PA18，PB8 是 LED1，PA18 是 BSL 键，因此使用 PB15。UART7 占用 PB18，ADC1 的通道因此由 PB18 改为 PB19。TIMG9 的 QEI 只能使用 PA3 或 PB7（C0）、PA2 或 PB9（C1）、PA4 或 PB8（IDX），这些引脚已分别用于 LFXT、SPI1 和 LED1，因此未配置 TIMG9 QEI。HFXT 的起振等待时间（`HFXTStartup`）设为最大值 255（约 16 ms），较短的等待时间下这块板的晶振在监测时尚未稳定，启动会停在等待 HFCLK 的循环中。
+引脚按板子原理图 v0.3 分配。SPI1 的 PICO 只能选 PB8、PB15 或 PA18，PA18 是 BSL 键；为与 bsp-mspm0g3507-mini 的引脚一致（那块板的 LED1 在 PB8），使用 PB15。UART7 占用 PB18，ADC1 的通道因此由 PB18 改为 PB19。TIMG9 的 QEI 只能使用 PA3 或 PB7（C0）、PA2 或 PB9（C1）、PA4 或 PB8（IDX），C0 可选的 PA3 和 PB7 已分别用于 LFXT 和 SPI1，因此未配置 TIMG9 QEI。HFXT 的起振等待时间（`HFXTStartup`）设为最大值 255（约 16 ms），较短的等待时间下这块板的晶振在监测时尚未稳定，启动会停在等待 HFCLK 的循环中。
 
-The pins follow schematic v0.3 of the board, with LED1 on PB8 as on the actual board (the schematic shows PA25). The SPI1 PICO can only be PB8, PB15 or PA18; PB8 is LED1 and PA18 is the BSL key, so PB15 is used. UART7 takes PB18, so the ADC1 channel moves from PB18 to PB19. The QEI of TIMG9 can only use PA3 or PB7 (C0), PA2 or PB9 (C1) and PA4 or PB8 (IDX); these pins are used by the LFXT, SPI1 and LED1, so no TIMG9 QEI is configured. The HFXT startup time (`HFXTStartup`) is set to its maximum of 255 (about 16 ms): with a shorter time the crystal of this board is not yet stable when it is checked, and startup stays in the loop waiting for HFCLK.
+The pins follow schematic v0.3 of the board. The SPI1 PICO can only be PB8, PB15 or PA18; PA18 is the BSL key, and PB15 is used to keep the pins of bsp-mspm0g3507-mini, whose board has LED1 on PB8. UART7 takes PB18, so the ADC1 channel moves from PB18 to PB19. The QEI of TIMG9 can only use PA3 or PB7 (C0), PA2 or PB9 (C1) and PA4 or PB8 (IDX); the C0 candidates PA3 and PB7 are used by the LFXT and SPI1, so no TIMG9 QEI is configured. The HFXT startup time (`HFXTStartup`) is set to its maximum of 255 (about 16 ms): with a shorter time the crystal of this board is not yet stable when it is checked, and startup stays in the loop waiting for HFCLK.
 
 | Peripheral | Pins | LibXR object |
 | --- | --- | --- |
 | Clocks | HFXT 16 MHz (PA5, PA6) through SYSPLL to an 80 MHz MCLK; LFXT 32.768 kHz (PA3, PA4) | — |
 | SysTick | — | `MSPM0Timebase` |
-| LED1, LED2 | PB8, PA16, active low | `MSPM0GPIO LED1`, `LED2` |
+| LED1, LED2 | PA25, PA16, active low | `MSPM0GPIO LED1`, `LED2` |
 | KEY1, KEY2 | PB24, PB20, low when pressed, falling-edge interrupt | `MSPM0GPIO KEY1`, `KEY2` |
 | UART0 | PA10 TX, PA11 RX, connected to the CH340N, 115200 | `MSPM0UART uart0`, TX with DMA; terminal |
 | UART1 | PA8 TX, PA9 RX | `MSPM0UART uart1`, TX with DMA |
