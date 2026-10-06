@@ -14,7 +14,6 @@ CMakePresets.json            构建预设
 cmake/MSPM0SysConfig.cmake   配置阶段运行 SysConfig
 cmake/arm-none-eabi-gcc.cmake  工具链文件
 cmake/LibXR.CMake            LibXR 接入
-Core/syscalls.c              C 库桩函数
 Modules/modules.yaml         使用的模块（`xrobot:` 记录 XRobot 版本）
 Modules/sources.yaml         源
 xrobot.lock                  每个模块使用的提交（lock）
