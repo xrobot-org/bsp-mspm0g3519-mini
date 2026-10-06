@@ -81,7 +81,7 @@ add_library(mspm0_device OBJECT "${MSPM0_STARTUP_FILE}" ${MSPM0_SYSCFG_SOURCES})
 target_link_libraries(mspm0_device PUBLIC mspm0_sdk)
 
 # ---- Application --------------------------------------------------------------------------
-add_executable(${PROJECT_NAME} User/main.c User/app_main.cpp Core/syscalls.c)
+add_executable(${PROJECT_NAME} main.c User/app_main.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE User)
 target_link_libraries(${PROJECT_NAME} PRIVATE mspm0_device)
 target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
