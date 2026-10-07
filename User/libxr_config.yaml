@@ -1,0 +1,37 @@
+generator: 6.0.0
+terminal_source: uart0
+SPI:
+  spi1:
+    tx_buffer_size: 64
+    rx_buffer_size: 64
+    dma_enable_min_size: 3
+I2C:
+  i2c0:
+    buffer_size: 32
+    dma_enable_min_size: 8
+  i2c1:
+    buffer_size: 32
+    dma_enable_min_size: 8
+Terminal:
+  read_buff_size: 32
+  max_line_size: 32
+  max_arg_number: 5
+  max_history_number: 5
+UART:
+  uart0:
+    tx_buffer_size: 128
+    rx_buffer_size: 128
+    tx_queue_size: 5
+  uart1:
+    tx_buffer_size: 64
+    rx_buffer_size: 64
+    tx_queue_size: 5
+  uart7:
+    tx_buffer_size: 64
+    rx_buffer_size: 64
+    tx_queue_size: 5
+PWM:
+  pwm_tima1_c0:
+    frequency: 1000
+  pwm_tima1_c1:
+    frequency:
