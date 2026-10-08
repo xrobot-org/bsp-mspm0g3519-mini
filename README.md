@@ -118,9 +118,9 @@ Building needs MSPM0 SDK 2.11.00.07, SysConfig 1.28.1, the Arm GNU Toolchain (`a
 JLinkExe -Device MSPM0G3519 -If SWD -Speed 4000 -AutoConnect 1
 ```
 
-在 J-Link Commander 中执行 `loadfile build/debug/mspm0_minidb48.elf`、`r`、`g`。运行后 LED1 按 250 ms 周期闪烁；CH340N 的串口以 115200 波特率提供 LibXR 终端，提示符为 `XRobot:/$`。
+在 J-Link Commander 中执行 `loadfile build/debug/mspm0_minidb48.elf`、`r`、`g`。运行后 LED1 按 250 ms 周期闪烁；CH340N 的串口以 115200 波特率提供 LibXR 终端，提示符为 `XRobot:/$`。终端命令 `key` 打印 KEY1、KEY2 的中断计数，`bsl` 命令复位进 ROM BSL，串口烧录不必再按 BSL 键。
 
-The SWD connector of the board (PA19 SWDIO, PA20 SWCLK) works with an XDS110 or a J-Link, as in the command above; in J-Link Commander, `loadfile build/debug/mspm0_minidb48.elf`, `r` and `g` download and start the firmware. At run time LED1 blinks with a 250 ms cycle, and the serial port of the CH340N provides the LibXR terminal at 115200 baud with the prompt `XRobot:/$`.
+The SWD connector of the board (PA19 SWDIO, PA20 SWCLK) works with an XDS110 or a J-Link, as in the command above; in J-Link Commander, `loadfile build/debug/mspm0_minidb48.elf`, `r` and `g` download and start the firmware. At run time LED1 blinks with a 250 ms cycle, and the serial port of the CH340N provides the LibXR terminal at 115200 baud with the prompt `XRobot:/$`. The terminal command `key` prints the KEY1 and KEY2 interrupt counters, and `bsl` resets into the ROM BSL, so serial flashing no longer needs the BSL button.
 
 ## 6. 修改引脚与时钟 / Changing Pins and Clocks
 

@@ -7,6 +7,7 @@
 #include "libxr.hpp"
 #include "mspm0_gpio.hpp"
 #include "mspm0_i2c.hpp"
+#include "mspm0_power.hpp"
 #include "mspm0_pwm.hpp"
 #include "mspm0_spi.hpp"
 #include "mspm0_timebase.hpp"
@@ -26,6 +27,21 @@ static void OnKeyInterrupt(bool in_isr, std::atomic<uint32_t>* count)
 {
   (void)in_isr;
   count->fetch_add(1, std::memory_order_relaxed);
+}
+
+// Terminal command `key`: prints the KEY1/KEY2 interrupt counters.
+static int KeyCommand(void*, int, char**)
+{
+  LibXR::STDIO::Print<"KEY1 {} KEY2 {}\r\n">(key1_irq_count.load(), key2_irq_count.load());
+  return 0;
+}
+
+// Terminal command `bsl`: resets into the ROM BSL for serial flashing.
+static int BslCommand(LibXR::PowerManager* power, int, char**)
+{
+  LibXR::STDIO::Print<"Entering BSL\r\n">();
+  power->JumpToBootloader();
+  return 0;
 }
 /* User Code End 1 */
 
@@ -64,6 +80,7 @@ extern "C" void app_main(void)
   // Timebase and platform
   static MSPM0Timebase timebase;
   PlatformInit();
+  static MSPM0PowerManager power_manager;
 
   // GPIO: SysConfig configured LED1 (PA25), LED2 (PA16) as output pins and KEY1 (PB24),
   // KEY2 (PB20) as input pins. The interrupt edge comes from SysConfig; RegisterCallback
@@ -107,6 +124,8 @@ extern "C" void app_main(void)
   Timer::Start(terminal_task);
 
   // Hardware registration
+  XR_REGISTER(power_manager, LibXR::PowerManager);
+
   XR_REGISTER(LED1, LibXR::GPIO);
   XR_REGISTER(LED2, LibXR::GPIO);
   XR_REGISTER(KEY1, LibXR::GPIO);
@@ -137,6 +156,15 @@ extern "C" void app_main(void)
   KEY2.SetConfig({GPIO::Direction::FALL_INTERRUPT, GPIO::Pull::NONE});
   KEY2.RegisterCallback(GPIO::Callback::Create(OnKeyInterrupt, &key2_irq_count));
   KEY2.EnableInterrupt();
+
+  // Add the `key` and `bsl` commands to the RamFS root, where the terminal looks them
+  // up; CreateCommand always takes an execution argument, so `key` gets a null pointer.
+  static auto key_command =
+      RamFS::CreateCommand("key", KeyCommand, static_cast<void*>(nullptr));
+  ramfs.Add(key_command);
+  static auto bsl_command = RamFS::CreateCommand(
+      "bsl", BslCommand, static_cast<LibXR::PowerManager*>(&power_manager));
+  ramfs.Add(bsl_command);
   /* User Code End 3 */
   XROBOT_MAIN();
 }
