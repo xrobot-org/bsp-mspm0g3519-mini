@@ -30,17 +30,9 @@ static void OnKeyInterrupt(bool in_isr, std::atomic<uint32_t>* count)
 }
 
 // Terminal command `key`: prints the KEY1/KEY2 interrupt counters.
-static int KeyCommand(void*, int, char**)
+static int KeyCommand(int, char**)
 {
   LibXR::STDIO::Print<"KEY1 {} KEY2 {}\r\n">(key1_irq_count.load(), key2_irq_count.load());
-  return 0;
-}
-
-// Terminal command `bsl`: resets into the ROM BSL for serial flashing.
-static int BslCommand(LibXR::PowerManager* power, int, char**)
-{
-  LibXR::STDIO::Print<"Entering BSL\r\n">();
-  power->JumpToBootloader();
   return 0;
 }
 /* User Code End 1 */
@@ -157,14 +149,11 @@ extern "C" void app_main(void)
   KEY2.RegisterCallback(GPIO::Callback::Create(OnKeyInterrupt, &key2_irq_count));
   KEY2.EnableInterrupt();
 
-  // Add the `key` and `bsl` commands to the RamFS root, where the terminal looks them
-  // up; CreateCommand always takes an execution argument, so `key` gets a null pointer.
-  static auto key_command =
-      RamFS::CreateCommand("key", KeyCommand, static_cast<void*>(nullptr));
+  // Add the `key` and `power` commands to the RamFS root, where the terminal looks them
+  // up; `power bootloader` resets into the ROM BSL for serial flashing.
+  static auto key_command = RamFS::CreateCommand("key", KeyCommand);
   ramfs.Add(key_command);
-  static auto bsl_command = RamFS::CreateCommand(
-      "bsl", BslCommand, static_cast<LibXR::PowerManager*>(&power_manager));
-  ramfs.Add(bsl_command);
+  power_manager.RegisterCommand(ramfs);
   /* User Code End 3 */
   XROBOT_MAIN();
 }
