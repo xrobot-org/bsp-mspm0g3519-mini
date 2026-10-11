@@ -1,0 +1,106 @@
+name: Build
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master, dev]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Configuration check: formatting of the XRobot YAML files and a locked module resolution.
+  check:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/xrobot-org/docker-image-mspm0:main
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install XRobot
+        run: |
+          git config --global --add safe.directory '*'
+          pip install "xrobot==$(sed -n 's/^xrobot: *//p' Modules/modules.yaml)"
+
+      - name: Check the configuration format
+        run: xrobot format --check
+
+      - name: Resolve the modules from xrobot.lock
+        run: xrobot setup --frozen
+
+  build:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/xrobot-org/docker-image-mspm0:main
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [debug, release]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # The image provides the MSPM0 SDK and SysConfig (MSPM0_SDK_INSTALL_DIR,
+      # SYSCONFIG_TOOL).
+      - name: Show SysConfig and the submodules
+        run: |
+          "$SYSCONFIG_TOOL" --version
+          git config --global --add safe.directory '*'
+          git submodule status
+
+      - name: Resolve the XRobot modules
+        run: |
+          pip install "xrobot==$(sed -n 's/^xrobot: *//p' Modules/modules.yaml)"
+          xrobot setup --frozen
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Firmware size
+        run: arm-none-eabi-size build/${{ matrix.preset }}/mspm0_minidb48.elf
+
+  # Compatibility canary: builds against the head of the LibXR master branch.
+  # A failure here is reported but does not fail the workflow.
+  libxr-master:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    container:
+      image: ghcr.io/xrobot-org/docker-image-mspm0:main
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Update LibXR to master
+        run: |
+          git config --global --add safe.directory '*'
+          git -C libxr fetch --depth 1 origin master
+          git -C libxr checkout --detach FETCH_HEAD
+          git -C libxr log -1 --format='LibXR master: %H %s'
+
+      - name: Resolve the XRobot modules
+        run: |
+          pip install "xrobot==$(sed -n 's/^xrobot: *//p' Modules/modules.yaml)"
+          xrobot setup --frozen
+
+      - name: Configure
+        run: cmake --preset release
+
+      - name: Build
+        run: cmake --build --preset release
+
+      - name: Firmware size
+        run: arm-none-eabi-size build/release/mspm0_minidb48.elf
