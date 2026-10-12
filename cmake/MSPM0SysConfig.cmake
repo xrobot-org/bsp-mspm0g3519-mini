@@ -129,6 +129,19 @@ function(mspm0_sysconfig syscfg_file)
     endif()
   endforeach()
 
+  # The SDK linker script of the MSPM0Gx51x devices places the driverlib trim table
+  # (section .TrimTable, filled by driverlib at run time) in SRAM without NOLOAD, so the
+  # section gets a load address in SRAM: objcopy -O binary then writes a 0x20200000-byte
+  # image and the .hex carries a record at an SRAM address. NOLOAD makes it NOBITS like .bss;
+  # the firmware does not change. Scripts without .TrimTable (MSPM0G350x) stay as they are.
+  file(READ "${_linker}" _lds)
+  string(REGEX REPLACE "(\n[ \t]*\\.TrimTable)[ \t]*:[ \t]*\\{" "\\1 (NOLOAD) : {"
+    _lds_fixed "${_lds}")
+  if(NOT _lds_fixed STREQUAL _lds)
+    file(WRITE "${_linker}" "${_lds_fixed}")
+    message(STATUS "Linker script: .TrimTable set to NOLOAD (${_linker})")
+  endif()
+
   # device.lds.genlibs: INPUT("<archive, relative to <sdk>/source>") per library.
   file(STRINGS "${_genlibs}" _inputs REGEX "^[ \t]*INPUT\\(")
   set(_libraries "")
